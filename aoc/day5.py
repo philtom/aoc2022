@@ -48,7 +48,7 @@ def parse_move_input(inputs: Iterator[str]) -> tuple[int, int, int]:
 
 
 def execute_move_with_stack(
-    stacks: list[collections.deque], move: tuple[int, int, int], size: int = 1
+    stacks: list[collections.deque], move: tuple[int, int, int]
 ):
     number = move[0]
     from_stack = move[1]
@@ -59,33 +59,55 @@ def execute_move_with_stack(
 
     return stacks
 
+def execute_grouped_move_with_stack(
+    stacks: list[collections.deque], move: tuple[int, int, int]
+):
+    number = move[0]
+    from_stack = move[1]
+    to_stack = move[2]
 
-def move_cargo_and_report_top_cargo(input: Iterator[str]) -> str:
+    temp_stacks = collections.defaultdict(collections.deque)
+    for i in range(0, number):
+        temp_stacks[from_stack].append(stacks[from_stack].pop())
+
+
+    for i in range(0, number):
+        stacks[to_stack].append(temp_stacks[from_stack].pop())
+
+    return stacks
+
+
+def move_cargo_and_report_top_cargo(input: Iterator[str], move_fn) -> str:
     stack_input = read_stack_input(input)
     stacks = parse_stack_input(stack_input)
     moves = parse_move_input(input)
     for move in moves:
-        execute_move_with_stack(stacks, move)
+        move_fn(stacks, move)
 
     return "".join([stacks[key].pop() for key in sorted(list(stacks.keys()))])
 
 
 def test1():
     input = utils.read_input("input/day5-part1-test.txt")
-    assert move_cargo_and_report_top_cargo(input) == "CMZ"
+    assert move_cargo_and_report_top_cargo(input, execute_move_with_stack) == "CMZ"
 
 
 def part1():
     input = utils.read_input("input/day5-part1.txt")
-    return move_cargo_and_report_top_cargo(input)
+    return move_cargo_and_report_top_cargo(input, execute_move_with_stack)
 
 
 def test2():
     input = utils.read_input("input/day5-part1-test.txt")
-    assert move_cargo_and_report_top_cargo(input) == "MCD"
+    assert move_cargo_and_report_top_cargo(input, execute_grouped_move_with_stack) == "MCD"
+
+def part2():
+    input = utils.read_input("input/day5-part1.txt")
+    return move_cargo_and_report_top_cargo(input, execute_grouped_move_with_stack)
 
 
 def main():
     test1()
     print(part1())
     test2()
+    print(part2())
