@@ -86,7 +86,20 @@ def part1():
     print(total_size_at_most_100k)
     assert total_size_at_most_100k == 1778099
 
+def test2():
+    lines = more_itertools.peekable(utils.read_input("input/day7-part1-test.txt"))
+    root = build_file_system(lines)
+    directories = file_system.find_directories(root)
+    directory_sizes = {directory.name:file_system.calc_total_size(directory) for directory in directories}
+    total_disk_available = 70000000
+    required_unused_space = 30000000
+    unused_space = total_disk_available - directory_sizes["/"]
+    space_to_delete = required_unused_space - unused_space
+    deletion_candidate_sizes = [size for name, size in directory_sizes.items() if size >= space_to_delete]
+    smallest_size = sorted(deletion_candidate_sizes)[0]
+    assert smallest_size == 24933642
 
 def main():
     test1()
     part1()
+    test2()
