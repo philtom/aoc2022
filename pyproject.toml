@@ -17,6 +17,7 @@ black = {version = "^22.10.0", allow-prereleases = true}
 day5 = "aoc.day5:main"
 day6 = "aoc.day6:main"
 day7 = "aoc.day7:main"
+day8 = "aoc.day8:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
