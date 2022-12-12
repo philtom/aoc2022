@@ -64,6 +64,13 @@ def test1():
     grid = create_grid(input)
     assert count_visible(grid) == 21
 
+def part1():
+    input = utils.read_input("input/day8-part1.txt")
+    grid = create_grid(input)
+    num_visible = count_visible(grid)
+    print(num_visible)
+    assert num_visible == 1705
 
 def main():
     test1()
+    part1()
