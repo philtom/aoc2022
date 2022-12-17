@@ -139,7 +139,33 @@ def part1():
     print(len(state.tail_history))
     assert len(state.tail_history) == 6367
 
+def test2():
+    inputs = utils.read_input("input/day9-part2-test.txt")
+    state = reduce(
+        process_input,
+        inputs,
+        State(
+            knot_coords=[(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
+            tail_history={(0, 0)},
+        ),
+    )
+    assert len(state.tail_history) == 36
+
+def part2():
+    inputs = utils.read_input("input/day9-part1.txt")
+    state = reduce(
+        process_input,
+        inputs,
+        State(
+            knot_coords=[(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
+            tail_history={(0, 0)},
+        ),
+    )
+    print(len(state.tail_history))
+    assert len(state.tail_history) == 2536
 
 def main():
     test1()
     part1()
+    test2()
+    part2()
