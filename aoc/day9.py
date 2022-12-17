@@ -1,13 +1,13 @@
 import dataclasses
 from functools import reduce
 import itertools
+from typing import Iterator
 from aoc import utils
 
 
 @dataclasses.dataclass
 class State:
-    head_coord: tuple[int, int]
-    tail_coord: tuple[int, int]
+    knot_coords: list[tuple[int, int]]
     tail_history: set[tuple[int, int]]
 
 
@@ -30,36 +30,54 @@ def process_input(state: State, input: str) -> State:
 
 
 def process_move_increment(state: State, direction: str) -> State:
-    return move_tail(move_head(state, direction))
+    new_head = move(state.knot_coords[0], direction)
+    # new_coords = list(map(follow, pairs(iter(state.knot_coords))))
+    def follow_each(coords, i):
+        return coords[:i] + [follow((coords[i - 1], coords[i]))] + coords[i+1:]
+
+    new_coords = reduce(
+        follow_each,
+        range(1, len(state.knot_coords)),
+        [new_head] + state.knot_coords[1:],
+    )
+    state = dataclasses.replace(
+        state,
+        knot_coords=new_coords,
+        tail_history=state.tail_history | {new_coords[-1]},
+    )
+    return state
 
 
-def move_head(state: State, direction: str) -> State:
+def pairs(
+    elements: Iterator[tuple[int, int]]
+) -> Iterator[tuple[tuple[int, int], tuple[int, int]]]:
+    prev = next(elements)
+    curr = next(elements)
+    while curr:
+        yield (prev, curr)
+        prev = curr
+        curr = next(elements, None)
+
+
+def move(coord: tuple[int, int], direction: str) -> tuple[int, int]:
     if direction == "R":
-        return dataclasses.replace(state, head_coord=move_right(state.head_coord))
+        return move_right(coord)
     elif direction == "L":
-        return dataclasses.replace(state, head_coord=move_left(state.head_coord))
+        return move_left(coord)
     elif direction == "U":
-        return dataclasses.replace(state, head_coord=move_up(state.head_coord))
+        return move_up(coord)
     elif direction == "D":
-        return dataclasses.replace(state, head_coord=move_down(state.head_coord))
+        return move_down(coord)
     else:
         raise ValueError(f"Unknown direction: {direction}")
 
 
-def move_tail(state: State) -> State:
-    """
-      H H H
-    H . . . H
-    H . T . H
-    H . . . H
-      H H H
-    """
-    delta_x = state.head_coord[0] - state.tail_coord[0]
-    delta_y = state.head_coord[1] - state.tail_coord[1]
-    if delta_x == 0 and delta_y == 0:
-        return state
+def follow(pair: tuple[tuple[int, int], tuple[int, int]]) -> tuple[int, int]:
+    leader, follower = pair
+    delta_x = leader[0] - follower[0]
+    delta_y = leader[1] - follower[1]
 
-    new_coords = state.tail_coord
+    new_coords = follower
     if delta_y == 2 or (delta_y == 1 and abs(delta_x) == 2):
         # move up
         new_coords = move_up(new_coords)
@@ -76,7 +94,7 @@ def move_tail(state: State) -> State:
         # move left
         new_coords = move_left(new_coords)
 
-    return update_tail_coord(state, new_coords)
+    return new_coords
 
 
 def move_up(coord: tuple[int, int]) -> tuple[int, int]:
@@ -95,18 +113,15 @@ def move_left(coord: tuple[int, int]) -> tuple[int, int]:
     return (coord[0] - 1, coord[1])
 
 
-def update_tail_coord(state: State, tail_coord: tuple[int, int]) -> State:
-    return dataclasses.replace(
-        state, tail_coord=tail_coord, tail_history=state.tail_history | {tail_coord}
-    )
-
-
 def test1():
     inputs = utils.read_input("input/day9-part1-test.txt")
     state = reduce(
         process_input,
         inputs,
-        State(head_coord=(0, 0), tail_coord=(0, 0), tail_history={(0, 0)}),
+        State(
+            knot_coords=[(0, 0), (0, 0)],
+            tail_history={(0, 0)},
+        ),
     )
     assert len(state.tail_history) == 13
 
@@ -116,7 +131,10 @@ def part1():
     state = reduce(
         process_input,
         inputs,
-        State(head_coord=(0, 0), tail_coord=(0, 0), tail_history={(0, 0)}),
+        State(
+            knot_coords=[(0, 0), (0, 0)],
+            tail_history={(0, 0)},
+        ),
     )
     print(len(state.tail_history))
     assert len(state.tail_history) == 6367
