@@ -45,6 +45,12 @@ def run_computer(instructions: Iterator[str]):
             # print(f"clock: {clock} register_x: {register_x} signal: {signal}")
             total_signal += signal
 
+        # draw pixel
+        position = (clock - 1) % 40
+        pixel = "#" if position in (register_x, register_x-1, register_x+1) else "."
+        end = "\n" if position == 39 else ""
+        print(pixel, end=end)
+
         # print(f"clock: {clock} register_x: {register_x} op: {op} params: {params}")
         # handle op
         if op == "noop":
